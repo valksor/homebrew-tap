@@ -7,57 +7,38 @@ class Margrave < Formula
     depends_on arch: :arm64
 
     on_arm do
-      url "https://github.com/valksor/margrave/releases/download/v0.1.2/margrave-v0.1.2-macos-arm64.tar.gz"
-      sha256 "062dd0a96697a15f801d9189ab851ad10afdd15a0363153a51e7f118bdc9739a"
+      url "https://github.com/valksor/margrave/releases/download/v0.1.3/margrave-v0.1.3-macos-arm64.tar.gz"
+      sha256 "b67c539d9430a71562658ed734d04748cd2dc94b8aa3e16facb573c6de202d44"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/valksor/margrave/releases/download/v0.1.2/margrave-v0.1.2-linux-x64.tar.gz"
-      sha256 "7870b8c42377bd3b384bced328a4895c6ea91f6bee879259a84f387a5dbb41da"
+      url "https://github.com/valksor/margrave/releases/download/v0.1.3/margrave-v0.1.3-linux-x64.tar.gz"
+      sha256 "452af65d245575a3a2d54b8a876902c64102c36af51d5dec9009a4470a318c44"
     end
 
     on_arm do
-      url "https://github.com/valksor/margrave/releases/download/v0.1.2/margrave-v0.1.2-linux-arm64.tar.gz"
-      sha256 "17bbfa668e6e0d941f3616a8b8b7e9c3add8c127fbf700dce7d6b68d0bfb8bc6"
+      url "https://github.com/valksor/margrave/releases/download/v0.1.3/margrave-v0.1.3-linux-arm64.tar.gz"
+      sha256 "b8a882698540acdf84e75d1f559af8ccbe536f52ef47085db70c431905bb378d"
     end
   end
 
   def install
     libexec.install Dir["*"]
 
+    # A wrapper, not a symlink: the binary sees the stable opt path as the path
+    # it was started from, so `margrave wrap` output survives `brew upgrade`.
     (bin/"margrave").write <<~SH
       #!/bin/sh
-      install_hint="brew install node"
-      node_bin=$(command -v node 2>/dev/null) || node_bin=""
-      [ -n "$node_bin" ] || {
-        echo "margrave: node not found on PATH. margrave needs Node 24 or newer. nvm puts node on PATH only in interactive shells. Install: $install_hint" >&2
-        exit 1
-      }
-      node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null) || node_major=""
-      case "$node_major" in
-        ""|*[!0-9]*) node_major=0 ;;
-      esac
-      [ "$node_major" -ge 24 ] || {
-        node_version=$(node -p process.version 2>/dev/null) || node_version="unknown version"
-        echo "margrave: found Node $node_version at $node_bin; margrave needs Node 24 or newer. Install: $install_hint" >&2
-        exit 1
-      }
-      exec node --preserve-symlinks --preserve-symlinks-main "#{opt_libexec}/dist/cli.js" "$@"
+      exec "#{opt_libexec}/bin/margrave" "$@"
     SH
     chmod 0755, bin/"margrave"
   end
 
-  def caveats
-    <<~EOS
-      margrave needs Node 24 or newer on PATH. This formula does not install Node.
-      Install it with:
-        brew install node
-    EOS
-  end
-
   test do
+    system bin/"margrave", "--help"
     system libexec/"vendor/ripwire/ripwire", "--version"
+    assert_path_exists libexec/"licenses/node/LICENSE"
   end
 end
