@@ -1,0 +1,103 @@
+name: Update margrave formula
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  attestations: read
+
+concurrency:
+  group: update-margrave
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the tap
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Find the latest release
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=$(gh release view --repo valksor/margrave --json tagName -q .tagName)
+          tag_re='^v[0-9]+\.[0-9]+\.[0-9]+$'
+          if ! [[ $TAG =~ $tag_re ]]; then
+            echo "::error::Latest release tag is not vMAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          VERSION=${TAG#v}
+          CURRENT=$(grep -o 'releases/download/v[0-9.]*' Formula/margrave.rb | head -n 1 | sed 's|releases/download/v||')
+          if [[ $CURRENT == "$VERSION" ]]; then
+            echo "up to date: $VERSION"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "formula $CURRENT -> release $VERSION"
+          {
+            echo "changed=true"
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download the release assets
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.latest.outputs.tag }}
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          dl=$RUNNER_TEMP/dl
+          rm -rf "$dl"
+          mkdir -p "$dl"
+          for plat in macos-arm64 linux-x64 linux-arm64; do
+            gh release download "$TAG" --repo valksor/margrave --dir "$dl" --pattern "margrave-v$VERSION-$plat.tar.gz"
+            test -f "$dl/margrave-v$VERSION-$plat.tar.gz"
+          done
+
+      - name: Verify the attestations
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          dl=$RUNNER_TEMP/dl
+          for plat in macos-arm64 linux-x64 linux-arm64; do
+            f=$dl/margrave-v$VERSION-$plat.tar.gz
+            gh attestation verify "$f" \
+              --repo valksor/margrave \
+              --signer-workflow valksor/margrave/.github/workflows/build.yml \
+              --source-ref refs/heads/master \
+              --deny-self-hosted-runners
+          done
+
+      - name: Render the formula
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          dl=$RUNNER_TEMP/dl
+          sha() { sha256sum "$dl/margrave-v$VERSION-$1.tar.gz" | cut -d ' ' -f 1; }
+          scripts/render-formula.sh "$VERSION" "$(sha macos-arm64)" "$(sha linux-x64)" "$(sha linux-arm64)"
+
+      - name: Commit and push
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/margrave.rb
+          git commit -m "margrave $VERSION" -m "Update the formula to the margrave v$VERSION release assets, verified with gh attestation."
+          git push

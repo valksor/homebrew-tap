@@ -1,0 +1,37 @@
+# valksor/tap
+
+Homebrew tap for [margrave](https://github.com/valksor/margrave), an on-demand skill router: one skill store, ranked search, load on demand.
+
+## Install
+
+```sh
+brew install valksor/tap/margrave
+```
+
+Platforms: macOS arm64, Linux x64, Linux arm64.
+
+margrave needs Node 27 or newer on PATH. The formula does not install Node, and Homebrew's own `node` is 26. Install Node 27 with nvm:
+
+```sh
+nvm install --only=alpha 27.0.0-alpha.0.1.0 && nvm use 27.0.0-alpha.0.1.0
+```
+
+nvm puts node on PATH only in interactive shells. The `margrave` command prints a clear message when it finds no Node or an older one.
+
+## How the formula stays current
+
+The formula follows margrave releases. The scheduled workflow "Update margrave formula" runs every 6 hours. It reads the latest release of `valksor/margrave`, verifies each of the three release assets with `gh attestation verify`, and only then updates `Formula/margrave.rb` and pushes. A new release can therefore take up to 6 hours to reach `brew upgrade`.
+
+GitHub disables scheduled workflows in a public repository after 60 days without repository activity. To restart the updater, open Actions, pick "Update margrave formula", and choose "Run workflow" (`workflow_dispatch`).
+
+## Render the formula by hand
+
+```sh
+scripts/render-formula.sh VERSION SHA_MACOS_ARM64 SHA_LINUX_X64 SHA_LINUX_ARM64
+```
+
+`VERSION` is `MAJOR.MINOR.PATCH` without the `v`. Each SHA is the lowercase 64-character SHA-256 of the matching release asset. The script refuses any other input and writes `Formula/margrave.rb`.
+
+## License
+
+BSD 3-Clause. See `LICENSE`.
