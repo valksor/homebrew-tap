@@ -10,13 +10,9 @@ brew install valksor/tap/margrave
 
 Platforms: macOS arm64, Linux x64, Linux arm64.
 
-margrave needs Node 27 or newer on PATH. The formula does not install Node, and Homebrew's own `node` is 26. Install Node 27 with nvm:
+margrave is a single binary with its own runtime, so Node is not needed. The Linux binaries need glibc.
 
-```sh
-nvm install --only=alpha 27.0.0-alpha.0.1.0 && nvm use 27.0.0-alpha.0.1.0
-```
-
-nvm puts node on PATH only in interactive shells. The `margrave` command prints a clear message when it finds no Node or an older one.
+If you ran `margrave wrap` with a formula older than the binary release, run it again and re-apply its output: the old agent configs start `node .../dist/cli.js`, which no longer exists.
 
 ## How the formula stays current
 
