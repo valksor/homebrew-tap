@@ -29,19 +29,19 @@ class Margrave < Formula
 
     (bin/"margrave").write <<~SH
       #!/bin/sh
-      install_hint="nvm install --only=alpha 27.0.0-alpha.0.1.0 && nvm use 27.0.0-alpha.0.1.0"
+      install_hint="brew install node"
       node_bin=$(command -v node 2>/dev/null) || node_bin=""
       [ -n "$node_bin" ] || {
-        echo "margrave: node not found on PATH. margrave needs Node 27 or newer; Homebrew's node is 26. nvm puts node on PATH only in interactive shells. Install: $install_hint" >&2
+        echo "margrave: node not found on PATH. margrave needs Node 24 or newer. nvm puts node on PATH only in interactive shells. Install: $install_hint" >&2
         exit 1
       }
       node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null) || node_major=""
       case "$node_major" in
         ""|*[!0-9]*) node_major=0 ;;
       esac
-      [ "$node_major" -ge 27 ] || {
+      [ "$node_major" -ge 24 ] || {
         node_version=$(node -p process.version 2>/dev/null) || node_version="unknown version"
-        echo "margrave: found Node $node_version at $node_bin; margrave needs Node 27 or newer (Homebrew's node is 26). Install: $install_hint" >&2
+        echo "margrave: found Node $node_version at $node_bin; margrave needs Node 24 or newer. Install: $install_hint" >&2
         exit 1
       }
       exec node --preserve-symlinks --preserve-symlinks-main "#{opt_libexec}/dist/cli.js" "$@"
@@ -51,9 +51,9 @@ class Margrave < Formula
 
   def caveats
     <<~EOS
-      margrave needs Node 27 or newer on PATH. This formula does not install Node,
-      and Homebrew's node is 26. Install Node 27 with:
-        nvm install --only=alpha 27.0.0-alpha.0.1.0 && nvm use 27.0.0-alpha.0.1.0
+      margrave needs Node 24 or newer on PATH. This formula does not install Node.
+      Install it with:
+        brew install node
     EOS
   end
 
