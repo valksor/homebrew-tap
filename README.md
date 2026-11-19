@@ -16,7 +16,7 @@ If you ran `margrave wrap` with a formula older than the binary release, run it 
 
 ## How the formula stays current
 
-The formula follows margrave releases. The scheduled workflow "Update margrave formula" runs every 6 hours. It reads the latest release of `valksor/margrave`, verifies each of the three release assets with `gh attestation verify`, and only then updates `Formula/margrave.rb` and pushes. A new release can therefore take up to 6 hours to reach `brew upgrade`.
+The formula follows margrave releases. The "Update margrave formula" workflow is scheduled to run every 10 minutes. It reads the latest release of `valksor/margrave`, verifies each of the three release assets with `gh attestation verify`, and only then updates `Formula/margrave.rb` and pushes. GitHub can delay or skip scheduled runs, so a new release can take longer than 10 minutes to reach the tap.
 
 GitHub disables scheduled workflows in a public repository after 60 days without repository activity. To restart the updater, open Actions, pick "Update margrave formula", and choose "Run workflow" (`workflow_dispatch`).
 
