@@ -7,20 +7,20 @@ class Margrave < Formula
     depends_on arch: :arm64
 
     on_arm do
-      url "https://github.com/valksor/margrave/releases/download/v0.3.0/margrave-v0.3.0-macos-arm64.tar.gz"
-      sha256 "9b8ba7eb2f3f9a064a541974e4e0eb6384514f36b2805c0066e47a729c9d6936"
+      url "https://github.com/valksor/margrave/releases/download/v0.3.2/margrave-v0.3.2-macos-arm64.tar.gz"
+      sha256 "c0966edbcb2b89fa32c8fafee598922247e81d43e3723ee0fcc406266cda0228"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/valksor/margrave/releases/download/v0.3.0/margrave-v0.3.0-linux-x64.tar.gz"
-      sha256 "50cd4c6c582b287366b8bf92df0c209c6647e714bf80a0f6353c469f8e8bf69e"
+      url "https://github.com/valksor/margrave/releases/download/v0.3.2/margrave-v0.3.2-linux-x64.tar.gz"
+      sha256 "9e8b7540a1a79f3683fcd3f50511bd5492690216135abf5890b342df5174b14a"
     end
 
     on_arm do
-      url "https://github.com/valksor/margrave/releases/download/v0.3.0/margrave-v0.3.0-linux-arm64.tar.gz"
-      sha256 "783576b33ab05c550e6899c28b3ce269b3a0b5c478244a40a877ac9da62c2505"
+      url "https://github.com/valksor/margrave/releases/download/v0.3.2/margrave-v0.3.2-linux-arm64.tar.gz"
+      sha256 "90eba3c4b67cf4d1017b6ba84eefb28f19f416d417a75a65a901730947b87c23"
     end
   end
 
